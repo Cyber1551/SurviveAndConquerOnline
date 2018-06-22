@@ -1,0 +1,154 @@
+
+<html>
+<head>
+<title>Survive And Conquer</title>
+<link rel="stylesheet" type="text/css" href="/client/css/style.css">
+<link rel="stylesheet" href="/client/css/jquery-ui.css">
+</head>
+<body onresize="resize()">
+<center>
+<h2 id="sacTitle">Survive And Conquer</h2>
+<div id="signDiv">
+<br />
+	<label><b>Login</b></label><br /><br />
+	<input id="signDiv-username" placeholder="Username..." type="text"></input><br /><br />
+	<input id="signDiv-password" placeholder="Password..." type="password"></input><br /><br />
+	<button id="signDiv-signIn">Sign In</button>
+	<button id="signDiv-register">Register</button><br /><br />
+	<label style="display: none; font-size: 20px;" id="signInfo"></label>
+
+	<br /><br />
+
+</div>
+<div id="regDiv" style="display:none;">
+<br />
+	<label><b>Register</b></label><br /><br />
+	<input id="regDiv-username" placeholder="Username..." type="text"></input><br /><br />
+	<input id="regDiv-password" placeholder="Password..." type="password"></input><br /><br />
+	<input id="regDiv-passwordRepeat" placeholder="Repeat Password..." type="password"></input><br /><br />
+	<input id="regDiv-email" placeholder="Email..." type="text"></input><br /><br />
+	<button id="regDiv-register">Create</button>
+	<button id="regDiv-signIn">Go Back</button><br /><br />
+	<label style="display: none; font-size: 20px;" id="regInfo"></label>
+</div>
+<div id="lobbyDiv" style="display:none;">
+<br />
+
+	<b>Welcome, <label id="userLabel"></label></b> | Level: 	<label id="level">0</label>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;Gold: <label id="gold">0</label><br /><br />
+	<div id="expBarCont" class="tooltip">
+		<div id="expBar"></div>
+		<span class="tooltiptext">
+		Exp: <label id="exp">10</label> / <label id="expMax">0</label>
+		</span>
+	</div>
+
+	<div id="tabs">
+  <ul>
+    <li><a href="#tabs-1">Play Game</a></li>
+    <li><a href="#tabs-2">Profile</a></li>
+    <li><a href="#tabs-3">Tutorials</a></li>
+		<li><a href="#tabs-4">Patch Notes</a></li>
+  </ul>
+  <div id="tabs-1">
+		<fieldset>
+    	<legend>Select a Game type: </legend>
+		<legend><b>Normal</b></legend>
+    	<label for="radio-1">Training</label>
+    	<input type="radio" class="radioButtons" value="training" name="radios" id="radio-1">
+    	<label for="radio-2">1v1</label>
+    	<input type="radio" class="radioButtons" value="one" name="radios" id="radio-2" checked="checked">
+    	<label for="radio-3">2v2</label>
+    	<input type="radio" class="radioButtons" value="two" name="radios" id="radio-3">
+		<label for="radio-4">3v3</label>
+    	<input type="radio" class="radioButtons" value="three" name="radios" id="radio-4"><br/>
+		<legend><b>Ranked</b></legend>
+		<label for="radio-5">1v1</label>
+    	<input type="radio" class="radioButtons" value="na" name="radios" id="radio-5" disabled>
+    	<label for="radio-6">2v2</label>
+    	<input type="radio" class="radioButtons" value="na" name="radios" id="radio-6" disabled>
+		<label for="radio-7">3v3</label>
+    	<input type="radio" class="radioButtons" value="na" name="radios" id="radio-7" disabled>
+  	</fieldset>
+				<br />
+			<button id="lobbyDiv-findMatch">Find Match</button>
+			<button id="lobbyDivCancel" style="display:none;">Cancel Search</button><br />
+			<div style="display:none;" id="loader"></div>
+			<label id="errorText"></label>
+			<br /><br />
+		  </div>
+  <div id="tabs-2">
+		Overall Wins: <label id="lobbyWins">0</label> / Overall Losses: <label id="lobbyLosses">0</label><br/> Overall Win Rate: <label id="lobbyWinR"></label><br /><br />
+	<div id="accordion">
+  <h3>Normal 1v1</h3>
+  <div class="accCont">
+		Wins: <label id="lobbyWins1">0</label> / Losses: <label id="lobbyLosses1">0</label><br/> Win Rate: <label id="lobbyWinR1"></label><br />
+  </div>
+  <h3>Normal 2v2</h3>
+  <div class="accCont">
+		Wins: <label id="lobbyWins2">0</label> / Losses: <label id="lobbyLosses2">0</label><br/> Win Rate: <label id="lobbyWinR2"></label><br />
+  </div>
+  <h3>Normal 3v3</h3>
+  <div class="accCont">
+		Wins: <label id="lobbyWins3">0</label> / Losses: <label id="lobbyLosses3">0</label><br/> Win Rate: <label id="lobbyWinR3"></label><br />
+  </div>
+</div>
+
+  </div>
+  <div id="tabs-3">
+		<h3>Tutorials</h3>
+			Coming soon!
+	</div>
+	<div id="tabs-4">
+		<h3>Patch 0.0.1</h3>
+			Updated Health bars style.<br/>
+			Updated Store System.<br/>
+			Added new training mode.<br/>
+			Added Upgrade System.<br/>
+			<b>Coming in 0.0.2</b><br/>
+			Fixed dummies<br/>
+			Login and register security<br />
+			Elements for bullets<br/>
+			More Items<br/>
+			Tutorials<br />
+			Chat and friend system<br />
+			Abilities???<br />
+			Better lobby and matchMaking.<br/>
+	</div>
+</div>
+<br/>
+	<button id="lobbyDiv-signOut">Sign Out</button><br />
+<div id="dialog-message" title="LEVEL UP!" style="text-align:center;display:none;">
+  Level Up!<br />
+  Gold: +<label id="addGold">0</label>
+</div> 
+</div>
+<div id="waitDiv" style="display:none;">
+<h3>Prepare for battle: </h3><label id="timer">30</label>
+<table>
+<tr>
+<td id="blueTeamList">
+ <b>Blue Team</b><br />
+</td>
+<td id="redTeamList">
+	<b>Red Team</b><br />
+</td>
+</tr>
+
+</table>
+</div>
+<div id="gameDiv" style="display:none;padding:0px;margin:0px;">
+<canvas id="ctx" width="1200" height="1000" style="border:1px solid #000000;padding:0px;margin:0px;" ></canvas>
+<div id="deathRecap" title="Death Recap">
+</div>
+</div>
+</center>
+
+<script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
+<script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+<script src="/client/js/Inventory.js"></script>
+<script src="/client/js/Elements.js"></script>
+<script src="/client/js/map.js"></script>
+<script src="/client/js/game.js"></script>
+</body>
+</html>
