@@ -24,7 +24,7 @@ var usersLoggedIn = [];
 //var roomSize = 2;
 var currentRoomID = null;
 var currentRooms = [];
-var goal = null;
+
 
 //db.account.insert({username:"bbb", password:"123", gold:"0", level:"1", exp:"0", wins:"0", losses:"0"});
 
@@ -88,16 +88,18 @@ var addUser = function(data, cb)
 }
 
 //var PLAYER_LIST = {};
-var playersInGoal1 = [];
-var playersInGoal2 = [];
+//var playersInGoal1 = [];
+//var playersInGoal2 = [];
 
 var Goal = function(param)
 {
 	var self = {};
+	self.playersInGoal1 = [];
+	self.playersInGoal2 = [];
 	self.team1 = param.one;
 	self.team2 = param.two;
 	self.amountMax = 1000;
-
+	self.roomId = param.id;
 	self.increaseAmount = function(team, amt)
 	{
 
@@ -110,7 +112,7 @@ var Goal = function(param)
 				if (self.team1 >= self.amountMax)
 				{
 					self.team1 = self.amountMax;
-					gameOver("red");
+					gameOver("red", self.roomId);
 					//console.log("team 1 wins")
 					//WIN THE GAME
 				}
@@ -125,7 +127,7 @@ var Goal = function(param)
 				if (self.team2 >= self.amountMax)
 				{
 					self.team2 = self.amountMax;
-					gameOver("blue");
+					gameOver("blue", self.roomId);
 					//WIN THE GAME
 				}
 			}
@@ -167,15 +169,24 @@ var Goal = function(param)
 		//var team1Num = playersInGoal1.length;
 		//var team2Num = playersInGoal2.length;
 		//console.log(self.team2N);
+		
 		for (var i in SOCKET_LIST)
 		{
-			SOCKET_LIST[i].emit("updateScoreBar", {team1:self.team1, team2:self.team2});
+			if (Player.list[i] == undefined)
+				return; 
+			//console.log("GoalId: " +self.roomId + "; id: " + Player.list[i].roomId);
+			if ( Player.list[i].roomId == self.roomId)
+			{
+				SOCKET_LIST[i].emit("updateScoreBar", {team1:self.team1, team2:self.team2});
+			}
+			
 		}
 
 	}
+	Goal.list[self.roomId] = self;
 	return self;
 }
-
+Goal.list = {};
 function checkAccountLevelIncrease(id)
 {
 	db.collection("account").find({username:usersLoggedIn[id]}).toArray(function(err, result) {
@@ -216,17 +227,17 @@ function checkAccountLevelIncrease(id)
 }
 
 
-function gameOver(team)
+function gameOver(team, roomId)
 {
-
+    
 	for (var x in Player.list)
 	{
-
+		console.log("GameOver: " + (Player.list[x].roomId == roomId));
 		//playersInGoal1.splice(playersInGoal1.indexOf(x), 1);
 		//playersInGoal2.splice(playersInGoal2.indexOf(x), 1);
 		//Player.list[x].isGoal = false;
 
-		if (Player.list[x].team == team)
+		if (Player.list[x].team == team && Player.list[x].roomId == roomId)
 		{
 			if (Player.list[x].matchType != 1)
 			{
@@ -253,9 +264,14 @@ function gameOver(team)
 				break;
 			}
 			//console.log(usersLoggedIn[x] + " Wins");
-
+			Player.onDisconnect(SOCKET_LIST[x]);
+			setTimeout(function()
+			{
+				checkAccountLevelIncrease(x);
+			}, 500);
+		
 		}
-		else
+		else if (Player.list[x].team != team && Player.list[x].roomId == roomId) 
 		{
 			//console.log(usersLoggedIn[x] + " Losses");
 			if (Player.list[x].matchType != 1)
@@ -279,10 +295,13 @@ function gameOver(team)
 					db.account.update({ username: usersLoggedIn[x]}, { $inc: { 'threeLoss': 1}});
 				break;
 			}
-
+			Player.onDisconnect(SOCKET_LIST[x]);
+			setTimeout(function()
+			{
+				checkAccountLevelIncrease(x);
+			}, 500);
 		}
-		Player.onDisconnect(SOCKET_LIST[x]);
-		checkAccountLevelIncrease(x);
+		
 
 
 
@@ -413,6 +432,7 @@ var Player = function(param)
 	self.elementType = null;
 	self.sprite = '/client/img/Player/player.png';
 	self.spriteShield = '/client/img/PlayerShield/playerShield.png';
+	self.target = null;
 	self.stats = {
 		attack:7,
 		elementalDamage:1,
@@ -422,7 +442,8 @@ var Player = function(param)
 		crit:0,
 		critDam:0,
 		lifeSteal:0,
-		lifeRegen:0
+		lifeRegen:0,
+		attackRange:5
 	}
 
 	self.killCounter = 0;
@@ -491,7 +512,7 @@ var Player = function(param)
 			y:self.y,
 			map:self.map,
 			roomId:self.roomId
-
+			
 		});
 		//b.x = self.x;
 		//b.y = self.y;
@@ -641,7 +662,7 @@ Player.onConnect = function(socket, roomId, index, team, map, matchType)
 		}
 		else if (data.inputId === 'attack')
 		{
-
+		    console.log(Player.getTarget(data.xx, data.yy));
 			if (player.cooldown <= 0 && data.state == true && player.isShielding == false)
 			{
 				player.isShooting = data.state;
@@ -737,6 +758,17 @@ Player.onConnect = function(socket, roomId, index, team, map, matchType)
 		bullet:Bullet.getAllInitPack()
 	});
 
+}
+Player.getTarget = function(x, y)
+{
+	for (var p in Player.list)
+	{
+		if (getDis(x, y, p.x, p.y) <= 10)
+		{
+			return p.id;
+		}
+	}
+	return -1;
 }
 Player.getAllInitPack = function()
 {
@@ -1319,8 +1351,8 @@ Bullet.update = function()
 
 setInterval(function()
 {
-	if (goal == null)
-		return;
+	
+
 	for (var i in Player.list)
 	{
 		var p = Player.list[i];
@@ -1356,41 +1388,42 @@ setInterval(function()
 		{
 			levelUpdate(p);
 		}
-
+		var g = Goal.list[p.roomId];
 		if (p.isGoal && p.team == "red")
 		{
-			console.log(playersInGoal2.length);
-			if (playersInGoal2.length == 0)
+			console.log(g.playersInGoal2.length);
+			
+			if (g.playersInGoal2.length == 0)
 			{
-				goal.increaseAmount(1, 20);
+				g.increaseAmount(1, 20);
 			}
-			if(playersInGoal1.indexOf(p) < 0)
-				playersInGoal1.push(p);
+			if(g.playersInGoal1.indexOf(p) < 0)
+				g.playersInGoal1.push(p);
 			//goal.team1N++;
 		}
-		else if(p.isGoal == false && p.team == "red" && playersInGoal1.includes(p) == true)
+		else if(p.isGoal == false && p.team == "red" && g.playersInGoal1.includes(p) == true)
 		{
-			playersInGoal1.splice(playersInGoal1.indexOf(p), 1);
+			g.playersInGoal1.splice(g.playersInGoal1.indexOf(p), 1);
 			//goal.team1N--;
 		}
 
 
 		if (p.isGoal && p.team == "blue")
 		{
-			console.log(playersInGoal1.length);
-			if (playersInGoal1.length == 0)
+			console.log(g.playersInGoal1.length);
+			if (g.playersInGoal1.length == 0)
 			{
-				goal.increaseAmount(2, 20);
+				g.increaseAmount(2, 20);
 			}
-			if (playersInGoal2.indexOf(p) < 0)
-				playersInGoal2.push(p);
+			if (g.playersInGoal2.indexOf(p) < 0)
+				g.playersInGoal2.push(p);
 			//goal.team2N++;
 
 		}
-		else if(p.isGoal == false && p.team == "blue" && playersInGoal2.includes(p) == true)
+		else if(p.isGoal == false && p.team == "blue" && g.playersInGoal2.includes(p) == true)
 		{
 			//console.log(playersInGoal2.indexOf(p));
-			playersInGoal2.splice(playersInGoal2.indexOf(p), 1);
+			g.playersInGoal2.splice(g.playersInGoal2.indexOf(p), 1);
 			//goal.team2N--;
 		}
 
@@ -1479,12 +1512,12 @@ io.sockets.on('connection', function(socket)
 						var twoLoss = result[0].twoLoss;
 						var threeWins = result[0].threeWins;
 						var threeLoss = result[0].threeLoss;
-
+						var gold = result[0].gold; 
 						var exp = result[0].exp;
 						var expMax = result[0].expMax;
 						var level = result[0].level;
 						//console.log(expMax);
-						socket.emit('signInResponse', {success: true, username: data.username, wins:wins, losses:losses, oneWins:oneWins, oneLoss:oneLoss, twoWins:twoWins, twoLoss:twoLoss, threeWins:threeWins, threeLoss:threeLoss, exp:exp, expMax:expMax, level:level});
+						socket.emit('signInResponse', {success: true, username: data.username, gold: gold, wins:wins, losses:losses, oneWins:oneWins, oneLoss:oneLoss, twoWins:twoWins, twoLoss:twoLoss, threeWins:threeWins, threeLoss:threeLoss, exp:exp, expMax:expMax, level:level});
 					}
 
 
@@ -1917,11 +1950,11 @@ io.sockets.on('connection', function(socket)
 				{
 					if (Player.list[data.playerId].team == "blue")
 					{
-						gameOver("red");
+						gameOver("red", Player.list[data.playerId].roomId);
 					}
 					else
 					{
-						gameOver("blue");
+						gameOver("blue",  Player.list[data.playerId].roomId);
 					}
 
 					//console.log (Player.list[data.playerId].team + " surrendered");
@@ -1932,11 +1965,11 @@ io.sockets.on('connection', function(socket)
 				{
 					if (Player.list[data.playerId].team == "blue")
 					{
-						gameOver("red");
+						gameOver("red",  Player.list[data.playerId].roomId);
 					}
 					else
 					{
-						gameOver("blue");
+						gameOver("blue",  Player.list[data.playerId].roomId);
 					}
 					//console.log (Player.list[data.playerId].team + " surrendered");
 				}
@@ -1946,11 +1979,11 @@ io.sockets.on('connection', function(socket)
 				{
 					if (Player.list[data.playerId].team == "blue")
 					{
-						gameOver("red");
+						gameOver("red",  Player.list[data.playerId].roomId);
 					}
 					else
 					{
-						gameOver("blue");
+						gameOver("blue",  Player.list[data.playerId].roomId);
 					}
 					console.log (Player.list[data.playerId].team + " surrendered");
 				}
@@ -2165,10 +2198,10 @@ function matchMakingOne(id, data, roomSize)
 			{
 				var tm = "blue";
 			}
-			goal = new Goal({one: 0, two: 0});
-			goal.updateBars();
+			var goal = new Goal({one: 0, two: 0, id:currentRoomID});
+			
 			Player.onConnect(SOCKET_LIST[playersWaitingOne[i]], currentRoomID, usersWaitingOne.indexOf(usersWaitingOne[i]), tm, 'map1', roomSize);
-
+			goal.updateBars();
 			Player.list[playersWaitingOne[i]].user = usersWaitingOne[i];
 
 			SOCKET_LIST[playersWaitingOne[i]].emit('strategy');
@@ -2213,10 +2246,10 @@ function matchMakingTwo(id, data, roomSize)
 			{
 				var tm = "blue";
 			}
-			goal = new Goal({one: 0, two: 0});
-			goal.updateBars();
+			goal = new Goal({one: 0, two: 0, id:currentRoomID});
+			
 			Player.onConnect(SOCKET_LIST[playersWaitingTwo[i]], currentRoomID, usersWaitingTwo.indexOf(usersWaitingTwo[i]), tm, 'map2', roomSize);
-
+			goal.updateBars();
 			Player.list[playersWaitingTwo[i]].user = usersWaitingTwo[i];
 
 			SOCKET_LIST[playersWaitingTwo[i]].emit('strategy');
@@ -2259,10 +2292,10 @@ function matchMakingThree(id, data, roomSize)
 			{
 				var tm = "blue";
 			}
-			goal = new Goal({one: 0, two: 0});
-			goal.updateBars();
+			goal = new Goal({one: 0, two: 0, id:currentRoomID});
+			
 			Player.onConnect(SOCKET_LIST[playersWaitingThree[i]], currentRoomID, usersWaitingThree.indexOf(usersWaitingThree[i]), tm, 'map3', roomSize);
-
+			goal.updateBars();
 			Player.list[playersWaitingThree[i]].user = usersWaitingThree[i];
 
 			SOCKET_LIST[playersWaitingThree[i]].emit('strategy');
@@ -2289,10 +2322,10 @@ function matchMakingTraining(id, data)
 		currentRooms.push(currentRoomID);
 
 		var tm = "blue";
-		goal = new Goal({one: 0, two: 0});
-		goal.updateBars();
+		goal = new Goal({one: 0, two: 0, id:currentRoomID});
+		
 		Player.onConnect(SOCKET_LIST[id], currentRoomID, 1, tm, 'map1', 'training');
-
+		goal.updateBars();
 		Player.list[id].user = data;
 		Player.list[id].matchType = "training";
 		console.log(id);

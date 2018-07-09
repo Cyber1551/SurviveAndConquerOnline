@@ -190,8 +190,8 @@
 
 		var winR = calculateWinRate(data.wins, data.losses);
 		$("#lobbyWinR").text(winR);
-		var currentGold = $("#gold").text();
-		$("#gold").text(currentGold + data.gold);  
+		var currentGold = parseInt($("#gold").text()) + data.gold;
+		$("#gold").text(currentGold);  
 		$("#addGold").text(data.gold);
 		//Level
 			$("#level").text(data.level);
@@ -262,7 +262,7 @@
 			$("#level").text(data.level);
 			$("#exp").text(data.exp);
 			$("#expMax").text(data.expMax);
-
+			$("#gold").text(data.gold);
 			var expPercent = (data.exp / data.expMax) * 100 + "%";
 			$("#expBar").css("width", expPercent);
 
@@ -639,7 +639,7 @@
 			var endingX = startingX + hpWidth;
 			var endingY = startingY + 10;
 
-			var lines = self.hp / 250;
+			var lines = self.hp / 100;
 			var bigLines = self.hp / 500;
 			var pixels = hpWidth / lines;
 			var bigPixels = hpWidth / bigLines;
@@ -650,21 +650,22 @@
 				ctx.beginPath();
 				ctx.strokeStyle = 'black';
 				ctx.moveTo(startingX, startingY);
-				if (c < 2)
-				{
-					ctx.lineTo(startingX, startingY + 6);
-				}
-				else
+				if (c == bigPixels)
 				{
 					ctx.lineTo(startingX, startingY + 10);
 					c = 0;
+				}
+				else
+				{
+					ctx.lineTo(startingX, startingY + 6);
+					
 				}
 
 				ctx.stroke();
 				ctx.closePath();
 
 				startingX += pixels;
-				c++;
+				c+=pixels;
 
 			}
 
@@ -879,13 +880,15 @@
 			if (Player.list[selfId].roomId !== self.roomId)
 				return;
 			ctx.fillStyle = "black";
-			var bx = self.x - Player.list[selfId].x + WIDTH/2;
-			var by = self.y - Player.list[selfId].y + HEIGHT/2;
+			var bx = entryCoor.x - Player.list[selfId].x + WIDTH/2;
+			var by = entryCoor.y - Player.list[selfId].y + HEIGHT/2;
 
 			//console.log("bx: " +bx + "y: " + by + "dx: " + dummy1.px + 16 + "dy: " + dummy1.py + 16)
 			//console.log(getDis(bx, by, dummy1.px, dummy1.py));
-
-			ctx.fillRect(bx-5, by-5, 10, 10);
+			 ctx.moveTo(Player.list[selfId].x, Player.list[selfId].y);
+			
+			 ctx.lineTo(bx-5, by-5);
+			//ctx.fillRect(bx-5, by-5, 10, 10);
 			ctx.fillStyle = "red";
 			//ctx.arc(self.x-5, self.y-5, 5, 0,d 2 * Math.PI, false);
 		}
@@ -1690,7 +1693,7 @@
 		if (isGuide)
 		{
 			var bg = BulletGuide();
-			bg.draw();
+			//bg.draw();
 		}
 		//drawName();
 		//updateScoreBoard();
@@ -1964,7 +1967,7 @@
 		{
 			if (isStore)
 				return;
-			socket.emit('keyPress', {inputId: 'attack', state: true});
+			//socket.emit('keyPress', {inputId: 'attack', state: true});
 		}
 		else if (event.button == 2)
 		{
@@ -1988,7 +1991,14 @@
 		{
 			if (isStore == false)
 			{
-				socket.emit('keyPress', {inputId: 'attack', state: false});
+				var xx = entryCoor.x - WIDTH/2;
+				var yy = entryCoor.y - HEIGHT/2;
+			    console.log(xx + "; " + yy);
+				socket.emit('keyPress', {inputId: 'attack', state: true, xx: xx, yy: yy});
+				setTimeout(function()
+			{
+				socket.emit('keyPress', {inputId: 'attack', state: false, xx: xx, yy: yy});
+			}, 500);
 			}
 			else
 			{
