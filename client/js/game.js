@@ -2575,7 +2575,7 @@
 			drawText(levelVal + " ("+expVal+"/"+expMaxVal+")", ((canvas.width/2) - 85), canvas.height-74, "15px Arial", 'black');
 			drawStats();
 
-			//drawScoreText();
+			drawScoreText();
 		}
 		else
 		{
