@@ -1991,14 +1991,15 @@
 		{
 			if (isStore == false)
 			{
-				var xx = entryCoor.x - WIDTH/2;
+				/*var xx = entryCoor.x - WIDTH/2;
 				var yy = entryCoor.y - HEIGHT/2;
 			    console.log(xx + "; " + yy);
 				socket.emit('keyPress', {inputId: 'attack', state: true, xx: xx, yy: yy});
 				setTimeout(function()
 			{
 				socket.emit('keyPress', {inputId: 'attack', state: false, xx: xx, yy: yy});
-			}, 500);
+			}, 500);*/
+				socket.emit('keyPress', {inputId: 'attack', state: false});
 			}
 			else
 			{

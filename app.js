@@ -662,7 +662,7 @@ Player.onConnect = function(socket, roomId, index, team, map, matchType)
 		}
 		else if (data.inputId === 'attack')
 		{
-		    console.log(Player.getTarget(data.xx, data.yy));
+		    //console.log(Player.getTarget(data.xx, data.yy));
 			if (player.cooldown <= 0 && data.state == true && player.isShielding == false)
 			{
 				player.isShooting = data.state;
