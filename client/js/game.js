@@ -877,18 +877,15 @@
 		self.roomId = initPack.roomId;
 		self.draw = function()
 		{
+			
 			if (Player.list[selfId].roomId !== self.roomId)
 				return;
 			ctx.fillStyle = "black";
-			var bx = entryCoor.x - Player.list[selfId].x + WIDTH/2;
-			var by = entryCoor.y - Player.list[selfId].y + HEIGHT/2;
+			var bx = self.x - Player.list[selfId].x + WIDTH/2;
+			var by = self.y - Player.list[selfId].y + HEIGHT/2;
 
-			//console.log("bx: " +bx + "y: " + by + "dx: " + dummy1.px + 16 + "dy: " + dummy1.py + 16)
-			//console.log(getDis(bx, by, dummy1.px, dummy1.py));
-			 ctx.moveTo(Player.list[selfId].x, Player.list[selfId].y);
-			
-			 ctx.lineTo(bx-5, by-5);
-			//ctx.fillRect(bx-5, by-5, 10, 10);
+
+			ctx.fillRect(bx-5, by-5, 10, 10);
 			ctx.fillStyle = "red";
 			//ctx.arc(self.x-5, self.y-5, 5, 0,d 2 * Math.PI, false);
 		}
@@ -1774,8 +1771,8 @@
 	{
 		console.log(data);
 	});
-	var team1ScoreVal = "";
-	var team2ScoreVal = "";
+	var team1ScoreVal = "0%";
+	var team2ScoreVal = "0%";
 	socket.on('updateScoreBar', function(data)
 	{
 
@@ -1783,6 +1780,7 @@
 		//$("#team2L").text("(+" + data.team2N + ")");
 		team1ScoreVal = Math.round((data.team1 / 1000) * 100) + "%";
 		team2ScoreVal = Math.round((data.team2 / 1000) * 100) + "%";
+		drawScoreText();
 		//$("#team1Div").css("height", data.team1);
 		//$("#team2Div").css("height", data.team2);
 	});
@@ -2592,12 +2590,12 @@
 				expBar.draw(ctx, false);
 				drawText(levelVal + " ("+expVal+"/"+expMaxVal+")", ((canvas.width/2) - 85), canvas.height-74, "15px Arial", 'black');
 				drawStats();
-
+				drawScoreText();
 
 			}
 		}
 		drawChat();
-		drawScoreText();
+		//drawScoreText();
 
 	}
 
@@ -2650,7 +2648,6 @@
 	}
 
 
-
 	function drawScoreText()
 	{
 		if (window.innerHeight >= 930)
@@ -2670,6 +2667,7 @@
 			}
 		}
 	}
+
 	function drawStats()
 	{
 		var fnt = "17px Arial";

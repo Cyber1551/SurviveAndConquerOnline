@@ -108,7 +108,7 @@ var Goal = function(param)
 			if (self.team1 < self.amountMax)
 			{
 				self.team1 += amt;
-				//console.log(team + "; " + self.team1 + "; +" + amt)
+				console.log(team + "; " + self.team1 + "; +" + amt)
 				if (self.team1 >= self.amountMax)
 				{
 					self.team1 = self.amountMax;
@@ -123,7 +123,7 @@ var Goal = function(param)
 			if (self.team2 < self.amountMax)
 			{
 				self.team2 += amt;
-				//console.log(team + "; " + self.team2 + "; +" + amt)
+				console.log(team + "; " + self.team2 + "; +" + amt)
 				if (self.team2 >= self.amountMax)
 				{
 					self.team2 = self.amountMax;
@@ -170,15 +170,20 @@ var Goal = function(param)
 		//var team2Num = playersInGoal2.length;
 		//console.log(self.team2N);
 		
+		
 		for (var i in SOCKET_LIST)
 		{
-			if (Player.list[i] == undefined)
-				return; 
-			//console.log("GoalId: " +self.roomId + "; id: " + Player.list[i].roomId);
-			if ( Player.list[i].roomId == self.roomId)
+			console.log(SOCKET_LIST[i].id);
+			if (Player.list[SOCKET_LIST[i].id] != undefined)
 			{
-				SOCKET_LIST[i].emit("updateScoreBar", {team1:self.team1, team2:self.team2});
+				if ( Player.list[SOCKET_LIST[i].id].roomId == self.roomId)
+				{
+					console.log(self.team1);
+					SOCKET_LIST[i].emit("updateScoreBar", {team1:self.team1, team2:self.team2});
+				}
 			}
+			
+			
 			
 		}
 
@@ -232,12 +237,13 @@ function gameOver(team, roomId)
     
 	for (var x in Player.list)
 	{
-		console.log("GameOver: " + (Player.list[x].roomId == roomId));
+		console.log("GameOver: " + Player.list[x].user + "; " + (Player.list[x].roomId == roomId));
 		//playersInGoal1.splice(playersInGoal1.indexOf(x), 1);
 		//playersInGoal2.splice(playersInGoal2.indexOf(x), 1);
 		//Player.list[x].isGoal = false;
-
-		if (Player.list[x].team == team && Player.list[x].roomId == roomId)
+if (Player.list[x].roomId == roomId)
+{
+	if (Player.list[x].team == team)
 		{
 			if (Player.list[x].matchType != 1)
 			{
@@ -263,15 +269,13 @@ function gameOver(team, roomId)
 					db.account.update({ username: usersLoggedIn[x]}, { $inc: { 'threeWins': 1}});
 				break;
 			}
-			//console.log(usersLoggedIn[x] + " Wins");
-			Player.onDisconnect(SOCKET_LIST[x]);
-			setTimeout(function()
-			{
-				checkAccountLevelIncrease(x);
-			}, 500);
+			console.log(usersLoggedIn[x] + " Wins");
+			
+			
+			
 		
 		}
-		else if (Player.list[x].team != team && Player.list[x].roomId == roomId) 
+		else if (Player.list[x].team != team) 
 		{
 			//console.log(usersLoggedIn[x] + " Losses");
 			if (Player.list[x].matchType != 1)
@@ -295,12 +299,17 @@ function gameOver(team, roomId)
 					db.account.update({ username: usersLoggedIn[x]}, { $inc: { 'threeLoss': 1}});
 				break;
 			}
-			Player.onDisconnect(SOCKET_LIST[x]);
-			setTimeout(function()
-			{
-				checkAccountLevelIncrease(x);
-			}, 500);
+			console.log(usersLoggedIn[x] + " Losses");
+			
 		}
+		
+		Player.onDisconnect(SOCKET_LIST[x]);
+
+		checkAccountLevelIncrease(x);
+
+}
+
+		
 		
 
 
@@ -482,6 +491,7 @@ var Player = function(param)
 
 		if (self.isShooting && self.cooldown == 0 && self.canMove && self.isShielding == false)
 		{
+			console.log("SHOT BULLET");
 			self.shootBullet(self.mouseAngle);
 			self.cooldown = self.stats.attackSpd;
 		}
@@ -1391,7 +1401,7 @@ setInterval(function()
 		var g = Goal.list[p.roomId];
 		if (p.isGoal && p.team == "red")
 		{
-			console.log(g.playersInGoal2.length);
+			console.log(p.team + "; " + g.playersInGoal1.length + "; " + g.playersInGoal2.length);
 			
 			if (g.playersInGoal2.length == 0)
 			{
@@ -1410,7 +1420,7 @@ setInterval(function()
 
 		if (p.isGoal && p.team == "blue")
 		{
-			console.log(g.playersInGoal1.length);
+			console.log(p.team + "; " + g.playersInGoal1.length + "; " + g.playersInGoal2.length);
 			if (g.playersInGoal1.length == 0)
 			{
 				g.increaseAmount(2, 20);
