@@ -1967,7 +1967,7 @@
 		{
 			if (isStore)
 				return;
-			//socket.emit('keyPress', {inputId: 'attack', state: true});
+			socket.emit('keyPress', {inputId: 'attack', state: true});
 		}
 		else if (event.button == 2)
 		{
