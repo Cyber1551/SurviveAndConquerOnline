@@ -44,6 +44,7 @@ The goal of the game is to capture the center point (100%) you do so by shooting
 I've also implemented a chat, leaver feature (will end the game if someone refreshes), and a bullet guide (currently disabled)
 The database is MongoDB and is located in app.js
 
-
+**This link is no longer accessible**
 You can test it at http://powerful-depths-52127.herokuapp.com (User: aaa, bbb, ccc, ddd; Pass is 123 for all or you can create your own)
+
 
