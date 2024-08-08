@@ -1,9 +1,8 @@
 # SurviveAndConquerOnline
 
-
-***Warning***
-I do not recommend this game to anyone WITHOUT javascript knowledge. The reason is this game is not consumer-ready, there are still some bugs that need to be fixed.
-For example: The account exp bar (NOT in game) is draw outside the border on max exp gain. The reason is drawing to the canvas is faster than updating the database. It does fix itself after another game. I would also recommend changing the textures since I am NOT an artist :)
+**Warning**
+This game was a hobby project back in high-school almost a decade ago. The code-base is very messy and not optimized and there are a lot of bugs that need to be fixed.
+Despite that, this project taught me a lot about networking an is a full working MOBA using vanilla javascript and sockets.
 
 This game is a MOBA-like game where 2, 4, or 6 players battle it out to gain control of a center point.
 There is a full account system in place along with Exp, leveling, gold, and stats.
