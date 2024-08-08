@@ -2,7 +2,7 @@
 
 **Warning**
 This game was a hobby project back in high-school almost a decade ago. The code-base is very messy and not optimized and there are a lot of bugs that need to be fixed.
-Despite that, this project taught me a lot about networking an is a full working MOBA using vanilla javascript and sockets.
+Despite that, this project taught me a lot about networking an is a full working MOBA using vanilla javascript, some JQuery, a mongoDB database, and sockets.
 
 This game is a MOBA-like game where 2, 4, or 6 players battle it out to gain control of a center point.
 There is a full account system in place along with Exp, leveling, gold, and stats.
